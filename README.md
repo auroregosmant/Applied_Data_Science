@@ -9,9 +9,11 @@
 Term: Spring 2021
 
 + Project title: What role has partisanship in the U.S. elections?
-+ This project is conducted by Aurore Gosmant - apg2170
++ This project is conducted by [Aurore Gosmant - apg2170]
 
-+ Project summary: [a short summary] Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
++ Project summary: From the very start of Donald Trump’s presidency, Americans have been divided along partisan lines in their views of him. Donald Trump’s victory over Hillary Clinton for president is the first time since 1940 that a major political party’s candidate had previously held no elected office or high-ranking governmental position. Moreover, in early 2020, an unprecedented pandemic stroke on the United States, causing more than 400,000 deaths of Americans, the House of Representatives impeached the 45th president of the United States, the shocking shooting of George Floyd Minneapolis by policemen started the Blacks Live Matter movement, and during the past months, America has been bind to the US elections, for which mail-in ballots counting has been at the heart of one of the greatest controversies. 2020 has been a very difficult year for the American public, and the term “Partisanship” has flourished, hitting the headlines even more every day.  
+
+In this report, I will try to understand what role plays partisanship in politics today. How does partisanship reflect in today’s politics, and what role did it play in the US elections? These are the questions I will try to answer through this study.
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
