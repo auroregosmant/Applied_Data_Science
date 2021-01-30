@@ -1,0 +1,801 @@
+---
+title: "What role has partisanship is U.S. elections?"
+author: "Aurore Gosmant apg2170"
+date: "January 27th, 2021"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+subtitle: ANES Exploratory Data - Applied Data Science - Columbia University
+---
+
+## ![Source of the image](../figs/intro.jpg)
+
+## I. Introduction
+
+On January 6th, an unprecedented riot and violent attack against the 117th United States Congress at the Capitol took place, named the **storming of the United States Capitol**, a few months after Joe Biden was names as 74th president of the United State. While other takeovers took place in the past years in isolated pockets of America or smaller cities, as the takeover in 2016 by right-wing extremists of a federal bird sanctuary in Oregon, this time, the deadly assault by rioters on the U.S. Capitol targeted the very heart of the government, by bringing together, in large numbers, members of disparate groups, creating an opportunity for extremists to establish links with each other. 
+
+From the very start of Donald Trump’s presidency, Americans have been divided along partisan lines in their views of him. Donald Trump’s victory over Hillary Clinton for president is the first time since 1940 that a major political party’s candidate had previously held no elected office or high-ranking governmental position. Moreover, in early 2020, an unprecedented pandemic stroke on the United States, causing more than 400,000 deaths of Americans, the House of Representatives impeached the 45th president of the United States, the shocking shooting of George Floyd Minneapolis by policemen started the Blacks Live Matter movement, and during the past months, America has been bind to the US elections, for which mail-in ballots counting has been at the heart of one of the greatest controversies. 2020 has been a very difficult year for the American public, and the term “Partisanship” has flourished, hitting the headlines even more every day.  
+
+In this report, I will try to understand what role plays partisanship in politics today. How does partisanship reflect in today’s politics, and what role did it play in the US elections? These are the questions I will try to answer through this study.
+
+
+## II. What is the difference between partisanship and polarization?
+
+Before Election 2016, political polarization was usually thought of as a term to describe the differences in party platforms between the Republicans and the Democrats, but this notion shifted with Trump’s candidacy.
+
+According to the Cambridge Dictionnary: 
+
+**Partisanship** is the quality or action of strongly supporting a person, principle, or political party, often without considering or judging the matter very carefully.
+
+**Polarization** is the act of dividing something, especially something that contains different people or opinions, into two completely opposing groups.
+
+Partisanship is becoming an identity. Despite these confounding political views, Americans’ voting behavior is remarkably consistent. Only around 7% of Americans regularly switch parties.
+
+The explanation for this mismatch of voters’ inconsistent beliefs and their strikingly consistent voting patterns is the influence of political parties. Over the last 40 years, partisanship has become a kind of social identity, a way of signaling to other people that you hold a distinct set of views about values, economics and social issues.
+
+
+## III. Data set
+
+This analysis study on US elections and politics is based on the American National Data Studies (ANES) data center. ANES is a collaboration of Stanford University and the University of Michigan, with funding by the National Science Foundation.
+
+The datasets I used are a mixture of Time Series cumulative data file from 1948 to 2016 https://electionstudies.org/data-center/anes-time-series-cumulative-data-file/  and from the 2020 Exploratory Testing Survey Pilots https://electionstudies.org/data-center/2020-exploratory-testing-survey/.
+
+For many of the graphs and plots in this report, the datafiles had to be aggregated one to the other in order to have data from 1970 to 2020 included. The datafiles were merged on to the other only when the questions for the respective questionnaires were very similar, and almost phrased the same. However, by doing this, it adds some uncertainty to the response that is made, since the questions were not always placed in the same order in both questionnaires, which can lead to biases in the respondent’s answer.
+
+
+```{r}
+#Importing libraries
+library(foreign)
+library(ggplot2)
+library(plyr)
+library(RColorBrewer)
+```
+
+```{r   warning=FALSE, message=FALSE}
+#Loading data 
+setwd("C:/Users/agos6/Desktop/Courses Spring/STATS Applied Data Science/Project 1")
+data <- read.spss("data/anes_timeseries_cdf.sav", to.data.frame=TRUE)
+data_2020 <- read.csv("data/anes_pilot_2020ets_csv.csv")
+```
+
+## IV. Methodology
+
+First, to give a general overview of the political situation among US citizens, using the data provided, I tracked the evolution of partisanship and party belonging from 1970 to 2020, to identify whether patterns of strong involvment have already appeared in the past.
+
+Second, after identifying some key issues on which both Republicans Democrats opinion diverge on, especially  on violence, since it has a big weight in politics today, based on my findings and literature, I will identify how opinions have evolved over the years in different parties, and how relationship accross parties has changed over time, as to highlight the power of partisanship.
+
+Finally, I will show how opinions can still differ among parties, which proves that now, belonging to a party means more belonging to a group than supporting a set of ideologies.
+
+
+## V. Political Overview 
+
+### A. Party Belonging Evolution From 1970 to 2020 
+
+Before being able to draw any conclusions about political polarization among US citizens, it is important to generate an overview of the evolution of party belonging from 1970 to 2020. 
+
+This is why, I aggregated data from the cumulative time series and from pilot survey of 2020 to generate the graph below. These are the following questions which were asked:
+
+*Cumulative Time Series data*
+
+**[VCF0302] Party Identification of Respondent- Initial Party ID Response  Generally speaking, do you usually think of yourself as a Republican, a Democrat, an Independent, or what?**
+
+1. Republican
+
+2. Independent
+
+3. No preference; none; neither
+
+4. Other
+
+5. Democrat
+
+
+*2020 Exploratory Survey*
+
+**[pid1r] Generally speaking, do you usually think of yourself as a Republican, a Democrat, an independent, or what?**
+
+1. Republican
+
+2. Democrat
+
+3. Independent
+
+4. Something else
+
+
+Since both of these questions had the greatest number of choice for the respondent, they are less susceptible to create bias in the respondent’s response. Actually, this question was asked just after interviewer asked if respondent was either Republic, Democrat or neutral. This enables to reduce bias, since if the respondent didn’t belong to either of these parties, he had the opportunity to be more precise in the other question, and if he miscategorized himself in the first question, he could correct himself at this question.
+
+
+```{r echo=FALSE}
+## 1970 - 2016 TIMES SERIES DATA 
+#Select time series with data only greater than 1970
+names(data)[names(data)=="VCF0004"] <- "Year"
+data <- subset(data, Year > 1970)
+```
+
+
+```{r echo=FALSE}
+## 1970 - 2016 TIMES SERIES DATA 
+#Select only Years and Party Belonging columns
+parties <- data[,c("Year", "VCF0302")]
+#Remove NaN values
+parties <- na.omit(parties)
+#Renames columns
+names(parties)[names(parties)=="VCF0302"] <- "Party"
+party_levels = levels(parties$Party)
+
+#Count Number of respondents per year
+N = aggregate(parties[,"Party"],by=list(parties$Year),FUN=length)
+colnames(N) <- c("Year", "Count_Respondents")
+N = rbind(N,N,N,N,N) #Number of respondents per year
+```
+
+```{r echo=FALSE, results='hide',message=FALSE}
+## 2020 EXPLORATORY DATA SURVEY 
+data_sub1<- data_2020[,c("citizen1","pid1r")]
+data_sub2<- data_2020[,c("citizen2","pid1r")]
+#Select only US citizens with correct range of response
+data_201 <- subset(data_sub1, citizen1 <3 & pid1r <5) 
+data_202 <- subset(data_sub2, citizen2 == 1& pid1r <5) 
+#Remove NaN values and rename columns
+data_201 <- na.omit(data_201)
+data_202 <- na.omit(data_202)
+colnames(data_201) <- c("Citizenship", "Party")
+colnames(data_202) <- c("Citizenship", "Party")
+
+#Aggregate two forms of data from 2020 Pilot data
+data_20 <- rbind(data_201, data_202)
+
+#Count number of respondents in 2020
+N2 = aggregate(data_20[,"Party"],by=list(data_20$Party),FUN=length)
+N2 <- cbind(N2, c("1. Republican" ,"5. Democrat","2. Independent", "4. Other"))
+colnames(N2) <- c("Group", "Count_Respondents","Party")
+N2$Party <- factor(N2$Party, levels = party_levels)
+N_resp = sum(N2$Count_Respondents)
+```
+
+```{r echo=FALSE}
+#Format data file
+party_2020 <- rep(2020, length(data_20[,1]))
+party_2020 <- data.frame(cbind(party_2020, data_20$Party))
+colnames(party_2020)<- c("Year","Party")
+
+party_2020$Party <- ifelse(party_2020$Party == 1,  "1. Republican", party_2020$Party)
+party_2020$Party <- ifelse(party_2020$Party == 2,  "5. Democrat", party_2020$Party)
+party_2020$Party <- ifelse(party_2020$Party == 3,  "2. Independent", party_2020$Party)
+party_2020$Party <- ifelse(party_2020$Party == 4,  "4. Other", party_2020$Party)
+party_2020$Party <- factor(party_2020$Party, levels = party_levels)
+```
+
+```{r, echo=FALSE}
+#AGGREGATE BOTH DATA SETS
+parties <- data.frame(rbind(parties, party_2020))
+```
+
+```{r}
+ggplot(parties, aes(x = Year, fill= Party )) + geom_bar(position='fill') + 
+  theme_bw() +
+  scale_fill_manual(values = c("1. Republican" = "#DA1B1E",
+                                "2. Independent"= "#FFCA3A",
+                                "3. No preference; none; neither"= "#8AC926",
+                                "4. Other"= "#F1DEDE",
+                                "5. Democrat"= "#0C2EED")) +
+  ggtitle("Evolution of party belonging from 1970 to 2020") +
+  xlab("Years") +
+  ylab("Political Party")
+```
+
+
+This graph shows that there has always been two major political parties in US politics, which are republicans and democrats. Over the past fifteen years, there has however been a increasing number of Republicans among the US populations, contrary to Democrats party, which has a slightly decreasing and then increasing trend over time. 
+
+Even though there seems to have an approximately constant number of independents among the respondents, what is striking is that less and less people have no preference nor opinion in the parties. When some parts of the population didn’t identify to any party, this trend is almost null nowadays. The year 2020 present no independent respondents since the questionnaire didn’t allow this choice of response.  
+
+**Thus, polarization among parties isn’t a phenomenon that appeared over the past decades, but is present in US politics since 1970. What is striking is that more and more people got engaged in politics over the past decade, and have now a preference between parties, as it was not the case 50 years ago.**
+
+### B. Partisanship Evolution From 1970 to 2020 
+
+Now we have seen that people go more enagaged in politics throught the half past centenary, let's have a look at the evolution of partisanship among each party.
+
+*Cumulative Time Series data*
+
+**[VCF0302]**
+Generally speaking, do you usually think of yourself as a Republican,
+a Democrat, an Independent, or what? (IF REPUBLICAN OR DEMOCRAT)
+Would you call yourself a strong (REP/DEM) or a not very strong
+(REP/DEM)? (IF INDEPENDENT, OTHER [1966 AND LATER: OR NO PREFERENCE;
+2008: OR DK) Do you think of yourself as closer to the Republican or Democratic party?
+
+1. Strong Democrat
+
+2. Weak Democrat
+
+3. Independent - Democrat
+
+4. Independent - Independent
+
+5. Independent - Republican
+
+6. Weak Republican
+
+7. Strong Republican
+
+
+*2020 Exploratory Survey*
+
+**[pidstr] Would you call yourself a strong (Democrat/Republican) or a not very strong (Democrat/Republican)?**
+
+__ Strong (Democrat/Republican) [1]
+
+__ Not very strong (Democrat/Republican) [2]
+
+
+```{r}
+## TIME SERIES 1970 - 2016
+involvment<- data[,c("Year","VCF0302","VCF0301")]
+involvment <- na.omit(involvment)
+names(involvment)[names(involvment)=="VCF0302"] <- "Party"
+names(involvment)[names(involvment)=="VCF0301"] <- "Involvment"
+
+#Distinguish parties
+republicans <- subset(involvment, Party == party_levels[1])
+democrats <- subset(involvment, Party == party_levels[5])
+democrats = subset(democrats, Involvment!="4. Independent - Independent")
+```
+
+```{r, echo=FALSE, results='hide',message=FALSE,}
+## EXPLORATORY DATA 2020
+
+#Format data for aggregation of data 2020 / Time series data
+inv_20<- data_2020[,c("pid1r","pidstr")]
+inv_20 <- na.omit(inv_20)
+#Select only US citizens with correct range of response
+inv_20 <- subset(inv_20, pid1r <5 & pidstr < 3)
+inv_20 <- cbind(rep(2020, length(inv_20[,1])), inv_20)
+colnames(inv_20) <- c("Year","Party" ,"Involvment")
+
+inv_20$Party <- ifelse(inv_20$Party == 1,  "Republican", inv_20$Party)
+inv_20$Party <- ifelse(inv_20$Party == 2,  "Democrat", inv_20$Party)
+
+rep_20 <- subset(inv_20, Party == "Republican")
+dem_20 <- subset(inv_20, Party == "Democrat")
+
+rep_20$Involvment <- ifelse(rep_20$Involvment == 1,  "7. Strong Republican", rep_20$Involvment)
+rep_20$Involvment <- ifelse(rep_20$Involvment == 2,  "6. Weak Republican", rep_20$Involvment)
+
+dem_20$Involvment <- ifelse(dem_20$Involvment == 1,  "1. Strong Democrat", dem_20$Involvment)
+dem_20$Involvment <- ifelse(dem_20$Involvment == 2,  "2. Weak Democrat", dem_20$Involvment)
+
+
+rep_20$Involvment <- factor(rep_20$Involvment)
+dem_20$Involvment <- factor(dem_20$Involvment)
+
+```
+
+```{r, echo=FALSE, results='hide',message=FALSE,}
+#Aggregate data
+dem_agg <- rbind(democrats, dem_20)
+rep_agg <- rbind(republicans, rep_20)
+```
+
+```{r}
+ggplot(rep_agg, aes(x = Year, 
+                        fill= factor(Involvment, 
+                                     levels = c("2. Weak Democrat",
+                                                "1. Strong Democrat",
+                                                "3. Independent - Democrat",
+                                                "4. Independent - Independent" ,
+                                                "5. Independent - Republican",
+                                                "6. Weak Republican",
+                                                "7. Strong Republican")) ))+ 
+geom_bar(position='fill') +
+theme_bw() + 
+labs(fill = "Involvment Strength") + 
+scale_fill_manual(values = c("7. Strong Republican" = "#DA1B1E","6. Weak Republican" = "#FD87A4"))+ 
+ggtitle("Evolution in partnership among Republicans from 1970 to 2020") + 
+xlab("Years") + 
+ylab("Partnership")+ 
+theme_void()
+
+ggplot(dem_agg, aes(x = Year, fill= factor(Involvment, 
+                                     levels = c("2. Weak Democrat",
+                                                "1. Strong Democrat",
+                                                "3. Independent - Democrat",
+                                                "4. Independent - Independent" ,
+                                                "5. Independent - Republican",
+                                                "6. Weak Republican",
+                                                "7. Strong Republican")) )) + geom_bar(position='fill') + 
+ theme_bw() + 
+ labs(fill = "Involvment Strength") + 
+scale_fill_manual(values = c("1. Strong Democrat" = "#0C2EED","2. Weak Democrat" = "#9EACFA"))+ 
+ ggtitle("Evolution in partnership among Democrats from 1970 to 2020") + 
+ xlab("Years") + 
+ ylab("Partnership") 
+```
+**The increasing trend in people strongly involved in the leading parties over the years is striking. Even though polarization isn't a recent phenomenon, partnership is much more recent and surely plays an important role in the American's division today!**
+
+## VI. Key Issues on main differences between republicans / democrats in 2020
+
+### A. Tolerance towards civil liberties
+It is crucial to understand what are the tolerance of both parties towards civil liberties, to identify whether there are some patterns, and some in-parties issues or not. For this question, only the 2020 Exploratory data set was used:
+
+**[leastgrp]** 
+Which of the following groups do you like the least?
+
+1. communists
+
+2. white supremacists
+
+3. atheists
+
+4. feminists
+
+5. religious fundamentalists
+
+6. gays
+
+7. sexists
+
+8. pro-gun activists
+
+9. gun control activists
+
+10. Muslims
+
+```{r warning=FALSE, message=FALSE }
+#Format data for aggregation of data 2020 / Time series data
+grp_20<- data_2020[,c("pid1r","leastgrp")]
+grp_20 <- na.omit(grp_20)
+#Select only US citizens with correct range of response
+grp_20 <- subset(grp_20, pid1r <5 & leastgrp < 11) 
+colnames(grp_20) <- c("Party" ,"Group_least")
+
+#Map values into levels
+grp_20$Group_least<-factor(grp_20$Group_least)
+grp_levels = levels(grp_20$Group_least)
+grp_levels_str = c("1. Communists","2. White supremacists","3. Atheists","4. Feminists","5. Religious fundamentalists","6. Gays","7. Sexists","8. Pro-gun activists","9. Gun control activists","10. Muslims")
+grp_20$Group_least = mapvalues(grp_20$Group_least,from = grp_levels, to = grp_levels_str)
+
+grp_agg = aggregate(grp_20[,"Group_least"],by=list(grp_20$Party,grp_20$Group_least),FUN=length)
+colnames(grp_agg) <- c("Party" ,"Group_least","Frequency")
+rep_20 <- subset(grp_agg, Party == 1)
+rep_20 <- cbind(rep_20, rep_20$Frequency/sum(rep_20$Frequency))
+
+dem_20 <- subset(grp_agg, Party == 2)
+dem_20<- cbind(dem_20, dem_20$Frequency/sum(dem_20$Frequency))
+N_dem_20 = sum(dem_20$Frequency)
+N_rep_20 = sum(rep_20$Frequency)
+colnames(rep_20) <- c("Party" ,"Group_least","Frequency","Probability")
+
+# Define the number of colors 
+nb.cols <- 10
+mycolors_Reds <- colorRampPalette(brewer.pal(10, "Reds"))(nb.cols)
+
+ggplot(rep_20, aes(x="", y=Frequency, fill=Group_least)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) +
+  geom_text(aes(label = paste0(round(Frequency/sum(Frequency),2)*100, "%")), position = position_stack(vjust=0.5))+ scale_fill_manual(values = mycolors_Reds)+
+  theme_minimal() + labs(fill = "Groups least appreciated by Republicans in 2020")+
+  theme_void()
+
+# Define the number of colors 
+nb.cols <- 10
+mycolors_Blue <- colorRampPalette(brewer.pal(10, "Blues"))(nb.cols)
+
+ggplot(dem_20, aes(x="", y=Frequency, fill=Group_least)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) +
+  geom_text(aes(label = paste0(round(Frequency/sum(Frequency),2)*100, "%")), position = position_stack(vjust=0.5))+scale_fill_manual(values = mycolors_Blue)+ labs(fill = "Groups least appreciated by Democrats in 2020") +theme_void()
+
+```
+**It is surprising to see that both parties like the least in majority white supremacists.** Half of the Democrats like the least white supremacists at 50%, and then equal Pro-gun activists and Religious fundamentals at 10%. For republicans, it varies more. Groups liked the most are white-supremacists and Communists equally at 25%, then Muslims and Atheists at 10%.
+
+[Note]: For this question, 592 Democrats and 467 Republicans answered to this question.
+
+### B. Violence to achieve political goals
+
+Because of the rise in violence noticed over the past years, revealing how parties believe that violence is helpful in achieving the partie's agenda is crucial. What is striking is that the never was never asked in any surveys before 2016, which emphasizes the fact that violence is an actual phenomenon which wasn't present in the past years as much as this decade.
+
+**[viol2a]/[viol2b]**
+How much do you feel it is justified for people to use violence to pursue their political goals in this country?
+
+1. Not at all
+
+2. A little
+
+3. A moderate amount
+
+4. A lot
+
+5. A great deal
+
+```{r echo=FALSE, warning=FALSE, results='hide',message=FALSE,}
+# 2020 EXPLORATORY DATA 
+violence_20<- data_2020[,c("pid1r","viol3_dems","viol1","viol2a","viol2b")]
+#Select only right range of party
+violence_2020 <- subset(violence_20, pid1r <5)
+colnames(violence_2020) <- c("Party" ,"Slapped","Threat","Goals1","Goals2")
+violence_2020$Party = factor(violence_2020$Party)
+violence_2020$Party = mapvalues(violence_2020$Party,from = levels(violence_2020$Party), to = c("Republican" ,"Democrat","Independent", "Other"))
+
+
+viol_goal1 = na.omit(violence_2020[,c("Party","Goals1")])
+viol_goal2 = na.omit(violence_2020[,c("Party","Goals2")])
+colnames(viol_goal1) = c("Party","Goals")
+colnames(viol_goal2) = c("Party","Goals")
+viol_goal = rbind(viol_goal1,viol_goal2)
+#Only accept correct range of answers
+viol_goal = subset(viol_goal, Goals < 6)
+```
+```{r echo=FALSE}
+viol_aggs = aggregate(viol_goal[,c("Party")],by=list(viol_goal$Goals,viol_goal$Party), FUN=length)
+colnames(viol_aggs) = c("Goals","Party","Frequency")
+N_viol = aggregate(viol_aggs[,c("Frequency")], by=list(viol_aggs$Goals), FUN = sum)
+N_viol = rbind(N_viol,N_viol,N_viol,N_viol)
+viol_aggs$Prob = viol_aggs$Frequency/N_viol
+colnames(viol_aggs) = c("Goals","Party","Frequency","Prob")
+```
+
+```{r warning=FALSE, message=FALSE}
+ggplot(viol_aggs, aes(x = Goals, y = Prob$x, group = Party, fill = Party)) + 
+             geom_histogram(stat = "identity",position="dodge")+ 
+scale_fill_manual(values = c("Republican" = "#DA1B1E", "Democrat"= "#0C2EED","Independent"= "#FFCA3A", "Other"= "#98CD3C")) + 
+ ggtitle("Violence in 2020")+  
+theme_void()+
+xlab("Violence: Not at all -> A great deal") + 
+ylab("Political Party")
+```
+We can conclude from this graph that both Republicans and Democrats have the same opinion towards violence when it comes to pursue their political goals. In order to better understand the point of view of each party, let's dive deeper into each partie's repartion of opinion:
+```{r}
+viol_aggs$Goals = factor(viol_aggs$Goals)
+viol_aggs$Goals = mapvalues(viol_aggs$Goals,from = levels(viol_aggs$Goals), to = c("Not at all","A little","A moderate amount","A lot","A great deal"))
+viol_goal_dem = subset(viol_aggs[,c("Goals","Frequency","Party")], Party == "Democrat")
+viol_goal_rep = subset(viol_aggs[,c("Goals","Frequency","Party")], Party == "Republican")
+
+ggplot(viol_goal_dem, aes(x="", y=Frequency, fill=Goals)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) +scale_fill_brewer(palette="Blues")+ 
+  geom_text(aes(label = paste0(round(Frequency/sum(Frequency),2)*100, "%")), position = position_stack(vjust=0.5)) +
+  labs(fill = "Feel it is justified to use violence to pursue  political goals?" )+ theme_void()+
+ggtitle("Democrats Violence justification feeling in 2020") 
+```
+
+```{r}
+ggplot(viol_goal_rep, aes(x="", y=Frequency, fill=Goals)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) + 
+scale_fill_brewer(palette="Reds")+ 
+ geom_text(aes(label = paste0(round(Frequency/sum(Frequency),2)*100, "%")), position = position_stack(vjust=0.5)) + 
+ labs(fill = "Feel it is justified to use violence to pursue  political goals?" )+  theme_void()+ 
+ggtitle("Republicans Violence justification feeling in 2020") 
+```
+**For both parties that violence isn't a major mean to pursue one's goals, as 75% of each Democrats' and Republicans' partisans believe that beliefs don't justify violence. However, in both party, it is striking to notice that a minority up to 25% allows violence to pursue one's belief.**
+
+
+### C. Violence towards opposing party
+
+*2020 EXPLORATORY DATA*
+**[viol3_dems/reps/both]** How often do you feel like [Democrats/Republicans/Democrats and Republicans] just deserve to be slapped?
+
+1. Never
+
+2. Some of the time
+
+3. About half of the time
+
+4. Most of the time
+
+5. Always
+
+9. Don't know
+
+
+
+```{r echo=FALSE, warning=FALSE, results='hide',message=FALSE}
+
+slapped = violence_2020[,c("Party","Slapped")]
+colnames(slapped) = c("Party","Slapped")
+#Answers which are a 6 and a 9 didn't answer to the question
+slapped$Slapped = ifelse(slapped$Slapped == 6,9,slapped$Slapped)
+
+slap_levels = c("1. Never","2. Some of the time","3. About half of the time","4. Most of the time","5. Always","9. Didn't Answer")
+
+
+agg = aggregate(slapped[,c("Party")], by=list(slapped$Party, slapped$Slapped), FUN=length)
+colnames(agg) = c("Party","Violence","Frequency")
+agg$Violence = factor(agg$Violence)
+agg$Violence = mapvalues(agg$Violence,from = levels(agg$Violence), to = slap_levels)
+
+viol_dem = subset(agg, Party == "Democrat")
+viol_rep = subset(agg, Party == "Republican")
+
+N_viol_dems = sum(viol_dem$Frequency)
+N_viol_reps = sum(viol_rep$Frequency)
+```
+
+Let's have a look more in depth in both parties:
+
+```{r}
+ggplot(viol_rep, aes(x="", y=Frequency, fill=Violence)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) +scale_fill_brewer(palette="Reds")+ 
+ geom_text(aes(label = paste0(round(Frequency/sum(Frequency),2)*100, "%")), position = position_stack(vjust=0.5)) + 
+ labs(fill = "How often do you feel that Democrats deserve to be slapped") + 
+theme_void()
+```
+
+```{r}
+ggplot(viol_dem, aes(x="", y=Frequency, fill=Violence)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0) +scale_fill_brewer(palette="Blues")+ 
+ geom_text(aes(label = paste0(round(Frequency/sum(Frequency),2)*100, "%")), position = position_stack(vjust=0.5)) +
+  labs(fill = "How often do you feel that Republicans deserve to be slapped") + 
+theme_void()
+```
+
+**Therefore, the result is striking! Republicans are much more incline to use violence against Democrats than the contrary, where Democrats don't answer the question at all. More seriously, let's know have a look to the question:**
+
+
+```{r echo=FALSE}
+slapped = violence_2020[,c("Party","Slapped")]
+colnames(slapped) = c("Party","Slapped")
+#Answers which are a 6 and a 9 didn't answer to the question
+slapped$Slapped = ifelse(slapped$Slapped == 6,9,slapped$Slapped)
+
+slap_levels = c("1. Never","2. Some of the time","3. About half of the time","4. Most of the time","5. Always","9. Didn't Answer")
+
+
+```
+
+
+```{r echo=FALSE}
+ggplot(slapped, aes(x = Slapped, fill = Party)) + 
+ geom_bar(position="dodge")+ 
+ scale_fill_manual(values = c("Republican" = "#DA1B1E", 
+                              "Democrat"= "#0C2EED",
+                              "Independent"= "#FFCA3A", 
+                              "Other"= "#F1DEDE")) + 
+ ggtitle("Violence in 2020") + 
+ xlab("Violence") + 
+ ylab("Political Party") 
+```
+
+Here is the legend for the x-axis histogram  :  1. Never / 2. Some of the time / 3. About half of the time / 4. Most of the time
+
+What a difference between both parties! Contrary to the great majority of Republicans who would use violence at some point, whether some of the time or always, Democrats have no idea on the question, and no Democrat has answered this question at all. This shows a rise in the use of violence by Republican party! 
+
+**This is a proof of the growing partisanship and polarization between both parties! When this questions was never asked in any poll before, now it makes sense to ask opposing parties whether the other deserve to receive violence. And this is a proof of growing partisanship!** 
+
+[Note] : 977 and 1167 Democrat respondents answered to this question
+
+### D. Thermometer on a key dividing issue - Abortion
+
+Finally, studying the evolution of the opinions in each of the parties over some controversial topics as abortion is a good manner to reveal partisan ship and more extremists opinions among a party. Especially, looking at data coming from a feeeling thermometer enables to highlight the feelings and partisan ships in each party.
+
+*TIMES SERIES 1972 - 1980*
+
+**[VCF0837] - When Should Abortion Be Allowed** merged with **[VCF0838] By Law, When Should Abortion Be Allowed 1980 - 2016**
+1. Abortion should never be permitted.
+
+2. Abortion should be permitted only if the life and health of the woman is
+in danger.
+
+3. Abortion should be permitted if, due to personal reasons, the woman would
+have difficulty in caring for the child.
+
+4. Abortion should never be forbidden, since one should not require a woman
+to have a child she doesn't want.
+
+9. DK; other
+
+
+*2020 EXPLORATORY DATA*
+
+**[abort1] Which of the following opinions on abortion best agrees with your view?**
+
+1. By law, abortion should never be permitted.
+
+2. The law should permit abortion only in the case of rape, incest, or when the woman’s life is in danger.
+
+3. The law should permit abortion for reasons other than rape, incest, or danger to the woman’s life, but only after the need for abortion has been clearly established
+.
+4. By law, a woman should always be able to obtain an abortion as a matter of personal choice.
+
+```{r echo=FALSE, results='hide',message=FALSE,}
+#Get Abortion thermometer from 1970 - 1980
+abortion_70<- data[,c("Year","VCF0302","VCF0837")]
+abortion_70 <- na.omit(abortion_70)
+names(abortion_70)[names(abortion_70)=="VCF0302"] <- "Party"
+names(abortion_70)[names(abortion_70)=="VCF0837"] <- "Abortion"
+
+#Get Abortion thermometer from 1980 - 2016
+abortion_80<- data[,c("Year","VCF0302","VCF0838")]
+abortion_80 <- na.omit(abortion_80)
+names(abortion_80)[names(abortion_80)=="VCF0302"] <- "Party"
+names(abortion_80)[names(abortion_80)=="VCF0838"] <- "Abortion"
+
+#Get Abortion thermometer from 1980 - 2016
+abortion_20<- data_2020[,c("pid1r","abort1")]
+abortion_20 <- na.omit(abortion_20)
+abortion_20 <- subset(abortion_20, pid1r <5) #Select only US citizens
+abortion_20 <- cbind(rep(2020, length(abortion_20[,1])), abortion_20)
+colnames(abortion_20) <- c("Year","Party" ,"Abortion")
+```
+
+
+```{r echo=FALSE,results='hide',message=FALSE,}
+#Configure the levels of the response
+ab_levels = c("1. Never be permitted",
+  "2. Be permitted only in case of rape, incest, danger",
+  "3. Be permitted other case than rape, incest, danger",
+  "4. Always be permitted if personal choice",
+  "9. DK; Other")
+
+#Renaming columns for 2020 data
+abortion_20$Party <- ifelse(abortion_20$Party == 1,  "Republican", abortion_20$Party)
+abortion_20$Party <- ifelse(abortion_20$Party == 2,  "Democrat", abortion_20$Party)
+
+```
+
+
+```{r echo=FALSE,results='hide',message=FALSE,}
+#Rename Abortion levels or 1970 - 2016 data
+ab_70_levels = levels(abortion_70$Abortion)
+ab_80_levels = levels(abortion_80$Abortion)
+abortion_20$Abortion<- factor(abortion_20$Abortion)
+ab_20_levels = levels(abortion_20$Abortion)
+
+abortion_70$Abortion = mapvalues(abortion_70$Abortion,from = ab_70_levels, to = ab_levels)
+abortion_80$Abortion = mapvalues(abortion_80$Abortion,from = ab_80_levels, to = ab_levels)
+abortion_20$Abortion = mapvalues(abortion_20$Abortion,from = ab_20_levels, to = ab_levels)
+```
+
+```{r echo=FALSE,results='hide',message=FALSE,}
+ab_rep_20 <- subset(abortion_20, Party == "Republican")
+ab_dem_20 <- subset(abortion_20, Party == "Democrat")
+#Distinguish parties
+ab_rep_70 <- subset(abortion_70, Party == party_levels[1])
+ab_dem_70 <- subset(abortion_70, Party == party_levels[5])
+ab_rep_80 <- subset(abortion_80, Party == party_levels[1])
+ab_dem_80 <- subset(abortion_80, Party == party_levels[5])
+#democrats = subset(democrats, Involvment!="4. Independent - Independent")
+#Aggregate data
+ab_rep_agg<- rbind(ab_rep_70, ab_rep_80, ab_rep_20)
+ab_dem_agg<- rbind(ab_dem_70, ab_dem_80, ab_dem_20)
+
+```
+
+```{r echo=FALSE,results='hide',message=FALSE,}
+N_resp_rep = aggregate(ab_rep_agg[,"Abortion"],by=list(ab_rep_agg$Year, ab_rep_agg$Abortion),FUN=length)
+colnames(N_resp_rep) = c("Year", "Party","Frequency")
+N_resp = aggregate(ab_rep_agg[,"Abortion"],by=list(ab_rep_agg$Year),FUN=length)
+N_resp = rbind(N_resp,N_resp,N_resp,N_resp,N_resp)
+N_resp_rep = cbind(N_resp_rep, N_resp_rep$Frequency/N_resp$x)
+colnames(N_resp_rep) = c("Year", "Abortion","Frequency","Probability")
+```
+
+```{r echo=FALSE,results='hide',message=FALSE,}
+N_resp_dem = aggregate(ab_dem_agg[,"Abortion"],by=list(ab_dem_agg$Year, ab_dem_agg$Abortion),FUN=length)
+colnames(N_resp_dem) = c("Year", "Abortion","Frequency")
+N_resp = aggregate(ab_dem_agg[,"Abortion"],by=list(ab_dem_agg$Year),FUN=length)
+n = dim(N_resp)[1]
+N_resp = rbind(N_resp,N_resp,N_resp,N_resp,N_resp[1:(n-1),])
+N_resp_dem = cbind(N_resp_dem, N_resp_dem$Frequency/N_resp$x)
+colnames(N_resp_dem) = c("Year", "Abortion","Frequency","Probability")
+```
+
+```{r}
+ggplot(N_resp_rep, aes(x=Year, y=Probability, group=Abortion)) + 
+ geom_area(aes(fill=Abortion, group = Abortion), position='stack') + 
+ scale_fill_manual(values = c("1. Never be permitted" = "#A51217",
+                               "2. Be permitted only in case of rape, incest, danger" = "#DA1B1E",
+                               "3. Be permitted other case than rape, incest, danger"= "#EF6C70",
+                               "4. Always be permitted if personal choice"= "#F5A3A6",
+                               "9. DK; Other"= "#FBDADB"))+ 
+labs(fill = "Abortion should...")
+
+ggplot(N_resp_dem, aes(x=Year, y=Probability, group=Abortion)) + 
+  geom_area(aes(fill=Abortion, group = Abortion), position='stack') + scale_fill_manual(values = c("1. Never be permitted" = "#0922AE",
+                                                                                                   "2. Be permitted only in case of rape, incest, danger" = "#0C2DE9",
+                                                                                                   "3. Be permitted other case than rape, incest, danger"= "#516CF6",
+                                                                                                   "4. Always be permitted if personal choice"= "#9EADFA",
+                                                                                                   "9. DK; Other"= "#D8DEFD"))+ 
+ labs(fill = "Abortion should...")
+```
+
+
+We can clearly notice that both parties have evolved on a complementary way. While Democrats are becoming much more keen on the fact that abortion should be allowed under certain cicumstances, on the contrary, Republicans are rejecting the idea of having abortion allowed at all.
+
+**Opinions on such a dividing issue as abortion has greatly evolved over the years. Parties have gotten more extremists views and opinions on the topic, which is again a proof of polarization and partisanship among each party**
+
+## VII. View of the US President - Among party divisions
+
+According to cambridge dictionnary, the president is the person who has the highest political position in a country that is a republic and who, in some of these countries, is the leader of the government.
+President should show proof of leadership, and this should be praised by its supporters, which is why studying the feeling thermometer of both parties for the qualities of leadership of their president is crucial.
+
+**[dtleader]/[jbleader]** How well do each of the following traits describe Donal Trump / Joe Biden:
+
+1. Extremely Well
+
+2. Very well
+
+3. Moderately Well
+
+4. Slightly well
+
+5. Not at all
+
+
+```{r echo=FALSE,results='hide',message=FALSE,}
+# 2020 EXPLORATORY DATA 
+leader1<- data_2020[,c("pid1r","dtleader1","jbleader1")]
+leader2<- data_2020[,c("pid1r","dtleader2","jbleader2")]
+#Select only right range of party
+leader1 <- na.omit(subset(leader1, pid1r <5 & dtleader1 < 6 & jbleader1 < 6))
+leader2 <- na.omit(subset(leader2, pid1r <5 & dtleader2 < 6 & jbleader2 < 6))
+colnames(leader1) <- c("Party" ,"Trump","Biden")
+colnames(leader2) <- c("Party" ,"Trump","Biden")
+leader_20 = rbind(leader1, leader2)
+leader_20$Party = factor(leader_20$Party)
+leader_20$Party = mapvalues(leader_20$Party,from = levels(leader_20$Party), to = c("Republican" ,"Democrat","Independent", "Other"))
+leader_20$Trump = factor(leader_20$Trump)
+leader_20$Biden = factor(leader_20$Biden)
+
+dems = subset(leader_20, Party == "Democrat")
+reps = subset(leader_20, Party == "Republican")
+```
+
+```{r}
+ggplot(leader_20, aes(x = Trump, fill = Party)) + 
+ geom_bar(position='fill') + 
+ theme_bw() + 
+ scale_fill_manual(values = c("Republican" = "#DA1B1E",
+                              "Democrat"= "#0C2EED",
+                              "Independent"="#FFCA3A",
+                              "Other"= "#98CD3C")) + 
+ ggtitle("Feeling on Trump Leadership - Extremely well -> Not at all") + 
+ xlab("Years") + 
+ ylab("Political Party")+
+theme_void()
+
+ggplot(leader_20, aes(x = Biden, fill = Party)) + 
+ geom_bar(position='fill') + 
+ theme_bw() + 
+ scale_fill_manual(values = c("Republican" = "#DA1B1E","Democrat"= "#0C2EED","Independent"="#FFCA3A","Other"= "#98CD3C")) + 
+ ggtitle("Feeling on Biden Leadership - Extremely well -> Not at all") + 
+ xlab("Years") + 
+ ylab("Political Party")+ 
+theme_void()
+
+```
+We can clearly see that both democrats and republicans support their leader a lot. We notice that republicans trust better the leadership qualities of Trump thand Democrats trust Biden's. Also, it is clear that all parties except Republicans have a strong negative opinion of Trump's leadership. Moreover, it is clear that the independent movement believes Trump doesn't have good leadership qualities, but  they don't believe Biden has good leadership qualities either. 
+
+Therefore, as leaders of each party have strong supporters from their side, Republicans believe in Trump's leadership much more than Democrats believe in Biden's leadership. This shows that Trump's supporters have a much stronger partisanship power than Biden. 
+
+## VIII. Conclusion
+
+We have shown that polarization is not a recent phenomenon, it has always existed in American politics. However, a new phenomenon that has appeared is partisanship. While Republican and Democrat parties have always taken the lead in US politics, more and more Americans are now getting strongly involved in those parties. 
+
+Partisanship is similar to a social identity, a way of signaling to other people that you hold a distinct set of views about values, economics and social issues. While some ideologies such as abortion continue to polarize the debate between both parties, we notice that Republicans are the one who are getting more and more implied into politics, having some anger against the Democrats, that wasn’t present in a violent way historically. While quarter of Democrats and Republicans now believe that pursuing their goals can explain the usage of violence, the entire parties don’t this the same way.
+
+Finally, what is striking, is that even though partisanship is increasing in both parties, Republicans support much more their leader than Democrats do. Non-republicans parties had a stronger feeling of bad leadership against Donald Trump than a favorable sense of leadership in Joe Biden, which shows that partisanship has been crucial for the 2016 election of Donald Trump, who has managed to get people involved in the Republican party, strongly defending the party as a group, not just supporting him.
+
+In a nutshell, partisanship is a new phenomenon that has played a crucial role in 2016 and 2020 US elections. Partisanship becomes a more important aspect of identity; voters are becoming more rigid in their beliefs. So-called “split-ticket” voting — ticking the box for, say, a Democratic president and a Republican senator — has fallen to its lowest level in decades. 
+
+
+
+## IX. Limitations
+
+It is important to have the following notes in mind when regarding this report:
+
+•	Some study questions as, what party are you belonging two might tend to show this tendency of polarization. For instance, the survey would contain the question, as asked in question VCF0291 of time series 1940 – 2016 data, in the thermometer index of major parties, and when there is only three possible choices : democrat, republican other. This might tend to bias the opinion of the respondent, and force him to choose one of the main largest parties.
+
+•	For some questions, I aggregated data from the times series and the pilot study. These questions are the ones where data from 1970 to 2016 are used with questions from 2020. Even though the questions asked and the answers corresponding were either exactly the same, or a that there had some minor modifications, as the two surveys were not conducted using the same communication tool, and because were not always in the same order on both surveys, there is some bias in the data and in the concusions driven from that.
+
+•	The pilot Exploratory data survey conducted in 2020 was split in two different forms, with some minor differences in both of them, which can lead to some biaises again.
+
+•	For almost all the questions regarding party belonging, I considered only the answers from US citizens, either who are native, or who have become US citizens, since the case study of this report is only limited to American Voters.
+
+•	For conclusions driven from time series data survey, the number of respondents could vary a lot according to different years.
+
+•	Whereas some of the surveys were conducted by mail, others were conducted by phone, which means that not the same targeted audience answered the survey.
