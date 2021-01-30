@@ -8,7 +8,7 @@
 
 Term: Spring 2021
 
-+ Project title: What role has partisanship is U.S. elections?
++ Project title: What role has partisanship in the U.S. elections?
 + This project is conducted by Aurore Gosmant - apg2170
 
 + Project summary: [a short summary] Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
